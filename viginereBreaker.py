@@ -46,7 +46,8 @@ def findPeriod(cipherTextNoSpecialCharacters):
         #print("AverageIndexOfCoincidence: " + str(averageIndexOfCoincidence))
         #print("--------------------")
         periodValue = int(np.where(arrayOfAverageIC == arrayOfAverageIC.max())[0] + 1)
-    return periodValue
+        IC = arrayOfAverageIC.max()
+    return periodValue, IC
 
 def getFinalSequences(periodValue, cipherTextNoSpecialCharacters):
     lengthOfTextNoSpecial = len(cipherTextNoSpecialCharacters)
@@ -65,7 +66,7 @@ def breakCaesar(finalSequences, sequenceNumber):
         potentialDecodedSequence = ""
         for j in range(0, len(finalSequences[sequenceNumber]), 1):
             tempIndex = (alphabet.index(finalSequences[sequenceNumber][j]) - caesarCipherInteger) % 26
-            potentialDecodedSequence = potentialDecodedSequence + alphabet[tempIndex] 
+            potentialDecodedSequence = potentialDecodedSequence + alphabet[tempIndex]
         #print(potentialDecodedSequence)
         for c in range(0,len(alphabet),1):
             numberOfInstances = potentialDecodedSequence.count(alphabet[c])
@@ -104,8 +105,11 @@ def addSpecialChars(decrypted, cipherTextOnlySpecialCharacters):
     return normalText
 
 def viginereBreaker(cipherTextUpper):
+    decision = False
     cipherTextOnlySpecialCharacters, cipherTextNoSpecialCharacters = seperateSpecialCharacters(cipherTextUpper)
-    periodValue = findPeriod(cipherTextNoSpecialCharacters)
+    periodValue, indexOfCoincidence = findPeriod(cipherTextNoSpecialCharacters)
+    if(indexOfCoincidence > indexOfCoincidenceEnglish):
+        decision = True
     #print("Period of Cipher is: " + str(periodValue))
     finalSequences = getFinalSequences(periodValue, cipherTextNoSpecialCharacters)
     arrayOfKeyBreakers = np.zeros(periodValue)
@@ -123,4 +127,5 @@ def viginereBreaker(cipherTextUpper):
         key = key + alphabet[int(arrayOfKeyBreakers[sequenceNumber])]
     decrypted = combine(decodedSequences, periodValue, cipherTextNoSpecialCharacters)
     normalText = addSpecialChars(decrypted, cipherTextOnlySpecialCharacters)
-    return normalText
+
+    return normalText, decision
